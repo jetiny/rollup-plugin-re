@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jetiny/rollup-plugin-re.svg?branch=master)](https://travis-ci.org/jetiny/rollup-plugin-re)
+
 # rollup-plugin-re
 
 Power rollup replace plugin with RegExp supported.
