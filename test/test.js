@@ -12,6 +12,10 @@ test('replaces strings', assert => rollup({
         {
           test: 'process.env.NODE_ENV',
           replace: "'production'"
+        },
+        {
+          test: /,\s*\)/g,
+          replace: ')'
         }
       ]
     })
@@ -19,4 +23,5 @@ test('replaces strings', assert => rollup({
 }).then((bundle) => {
   const code = bundle.generate().code
   assert.true(code.indexOf("'production' === 'production'") !== -1)
+  assert.true(code.indexOf(', )') === -1)
 }))

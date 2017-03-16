@@ -5,7 +5,7 @@ const YEAR = new Date().getFullYear()
 
 export default {
   entry: 'src/index.js',
-  dest: 'dist/rollup-plugin-re.common.js',
+  dest: 'dist/rollup-plugin-re.cjs.js',
   plugins: [
     buble()
   ],

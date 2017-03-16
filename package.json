@@ -2,11 +2,11 @@
   "name": "rollup-plugin-re",
   "version": "1.0.1",
   "description": "rollup replace plugin",
-  "main": "dist/rollup-plugin-re.common.js",
+  "main": "dist/rollup-plugin-re.cjs.js",
   "jsnext": "dist/rollup-plugin-re.es.js",
   "scripts": {
-    "build": "rollup -c -f cjs -o dist/rollup-plugin-re.common.js && rollup -c -o dist/rollup-plugin-re.es.js",
-    "dev": "rollup -cw -f cjs -o dist/rollup-plugin-re.common.js",
+    "build": "rollup -c -f cjs -o dist/rollup-plugin-re.cjs.js && rollup -c -o dist/rollup-plugin-re.es.js",
+    "dev": "rollup -cw -f cjs -o dist/rollup-plugin-re.cjs.js",
     "test": "npm run lint && npm run build && npm run unit",
     "lint": "standard rollup.config.js test/test.js src/**",
     "format": "standard --fix test/** src/**",
@@ -33,7 +33,7 @@
   "homepage": "https://github.com/jetiny/rollup-plugin-re#readme",
   "dependencies": {
     "magic-string": "^0.16.0",
-    "rollup-pluginutils": "^1.5.2"
+    "rollup-pluginutils": "^2.0.1"
   },
   "devDependencies": {
     "ava": "^0.16.0",

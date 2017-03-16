@@ -9,9 +9,14 @@ export default function replace (options = {}) {
   if (Array.isArray(patterns)) {
     patterns.forEach((it) => {
       if (Object.prototype.toString.call(it.test) === '[object RegExp]') {
-        it.isRegexp = true
+        it.testIsRegexp = true
       } else if (typeof it.test === 'string') {
-        it.isString = true
+        it.testIsString = true
+      }
+      if (typeof it.replace === 'string') {
+        it.replaceIsString = true
+      } else if (typeof it.replace === 'function') {
+        it.replaceIsFunction = true
       }
       it.filter = createFilter(it.include, it.exclude)
       contents.push(it)
@@ -36,17 +41,21 @@ export default function replace (options = {}) {
         if (pattern.match && !pattern.match.test(id)) {
           return
         }
-        if (pattern.isRegexp) {
+        if (pattern.testIsRegexp) {
           let match = pattern.test.exec(code)
           let start, end
           while (match) {
             hasReplacements = true
             start = match.index
             end = start + match[0].length
-            magicString.overwrite(start, end, pattern.replace.call(null, match))
+            if (pattern.replaceIsString) {
+              magicString.overwrite(start, end, pattern.replace)
+            } else if (pattern.replaceIsFunction) {
+              magicString.overwrite(start, end, pattern.replace.call(null, match))
+            }
             match = pattern.test.exec(code)
           }
-        } else if (pattern.isString) {
+        } else if (pattern.testIsString) {
           let start, end
           let len = pattern.test.length
           let pos = code.indexOf(pattern.test)
@@ -54,7 +63,11 @@ export default function replace (options = {}) {
             hasReplacements = true
             start = pos
             end = start + len
-            magicString.overwrite(start, end, pattern.replace)
+            if (pattern.replaceIsString) {
+              magicString.overwrite(start, end, pattern.replace)
+            } else if (pattern.replaceIsFunction) {
+              magicString.overwrite(start, end, pattern.replace())
+            }
             pos = code.indexOf(pattern.test, pos + 1)
           }
         }

@@ -1,3 +1,9 @@
 language: node_js
 node_js:
-  - "6.1"
+- '7.6'
+deploy:
+  provider: npm
+  email: 86287344@qq.com
+  skip_cleanup: true
+  api_key:
+    secure: RAjd4aFgPaPcpOKf/Prmd7mCAl1WE0USEp4kOXX4KxWKnQucOgsQJ1jrup3Ky1qJaUX1Uc+cMWo2r6nWBT5y1QKBtJWcijvdDx2L5wSkb/7rE/hnl/vAG10e1CrRqCjQZwvqX45hQPRfdxvEfdF2RYKrcPpLvYtDXH+9NA2qRNdQsJqvmAsy4LPGMVrHK/BYOGIjM6YI8BAFuzH2QzCmNj8V9v48PFqjIwAhPdlISoq4/oCgKrOnD8cvXj8PviQD5+n711x3uBiXQ+EANUwO3scqDWdVLb6txku1cxDNnepolosN0DdppIh60PJNMQp0/DbwaDqKT6N+1TX2shpYkvkhDxJ/PVbCg9i+PUaNmcqXn0REtQGyzqpDARZz5x9CVPFYvQEmFf6qVRT0yhEVrcd8woFgAweu93QfTdfDdONsP08nUS1FVcJOy580WSr1TOcw51nkPezszoTgoKqtgS8PqmuCBYAWETlgJeTl+y7V9TMXVt9oRbEHBf5NJi8wnuEdrwfayyOtNQS98yY7+2aM7B1j5b9uo96MQP44L1ux4WtqT+ulW82j9L1YzXW6/CDBTgvzom57289jJ7Hvq/UxpkxuegeUZmGxpls+CAU9KgIyxyrsMB6EgUWwmMA5KpTE7xTyJe/Uqnemnrxv0PlZcak9KviphXs+jLfJrYA=
