@@ -16,6 +16,12 @@ test('replaces strings', assert => rollup({
         {
           test: /,\s*\)/g,
           replace: ')'
+        },
+        {
+          test: /!(\w+)!/g,
+          replace: function (_, words) {
+            return words.toLowerCase()
+          }
         }
       ]
     })
@@ -24,4 +30,5 @@ test('replaces strings', assert => rollup({
   const code = bundle.generate().code
   assert.true(code.indexOf("'production' === 'production'") !== -1)
   assert.true(code.indexOf(', )') === -1)
+  assert.true(!!~~code.indexOf('helloworld'))
 }))

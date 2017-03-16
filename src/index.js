@@ -51,7 +51,11 @@ export default function replace (options = {}) {
             if (pattern.replaceIsString) {
               magicString.overwrite(start, end, pattern.replace)
             } else if (pattern.replaceIsFunction) {
-              magicString.overwrite(start, end, pattern.replace.call(null, match))
+              let str = pattern.replace.apply(null, match)
+              if (typeof str !== 'string') {
+                throw new Error('[rollup-plugin-re] replace function should return a string')
+              }
+              magicString.overwrite(start, end, str)
             }
             match = pattern.test.exec(code)
           }
@@ -66,7 +70,11 @@ export default function replace (options = {}) {
             if (pattern.replaceIsString) {
               magicString.overwrite(start, end, pattern.replace)
             } else if (pattern.replaceIsFunction) {
-              magicString.overwrite(start, end, pattern.replace())
+              let str = pattern.replace()
+              if (typeof str !== 'string') {
+                throw new Error('[rollup-plugin-re] replace function should return a string')
+              }
+              magicString.overwrite(start, end, str)
             }
             pos = code.indexOf(pattern.test, pos + 1)
           }

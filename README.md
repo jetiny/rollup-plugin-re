@@ -26,7 +26,7 @@ rollup({
           match: /formidable(\/|\\)lib/, 
           // string or regexp
           test: 'if (global.GENTLY) require = GENTLY.hijack(require);', 
-          // string replaced
+          // string or function to replaced with
           replace: '',
         }
       ]
@@ -59,7 +59,7 @@ rollup({
       match: /formidable(\/|\\)lib/, 
       // string or regexp
       test: 'if (global.GENTLY) require = GENTLY.hijack(require);', 
-      // string replaced
+      // string or function
       replace: '',
     }
   ]
