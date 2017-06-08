@@ -32,3 +32,55 @@ test('replaces strings', assert => rollup({
   assert.true(code.indexOf(', )') === -1)
   assert.true(!!~~code.indexOf('helloworld'))
 }))
+
+test('replaces with text', assert => rollup({
+  entry: 'fixtures/simple.js',
+  plugins: [
+    replace({
+      patterns: [
+        {
+          text: `exports = 'xxx'`
+        }
+      ]
+    })
+  ]
+}).then((bundle) => {
+  const code = bundle.generate().code
+  assert.true(code.indexOf('xxx') !== -1)
+}))
+
+test('replaces with file', assert => rollup({
+  entry: 'fixtures/simple.js',
+  plugins: [
+    replace({
+      patterns: [
+        {
+          file: 'file.js'
+        }
+      ]
+    })
+  ]
+}).then((bundle) => {
+  const code = bundle.generate().code
+  assert.true(code.indexOf('fileContent') !== -1)
+}))
+
+test('replaces with file', assert => rollup({
+  entry: 'fixtures/simple.js',
+  plugins: [
+    replace({
+      patterns: [
+        {
+          file: './file.js',
+          transform (code) {
+            return code + `\ndebugger;`
+          }
+        }
+      ]
+    })
+  ]
+}).then((bundle) => {
+  const code = bundle.generate().code
+  assert.true(code.indexOf('fileContent') !== -1)
+  assert.true(code.indexOf('debugger;') !== -1)
+}))

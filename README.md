@@ -2,7 +2,7 @@
 
 # rollup-plugin-re
 
-Power rollup replace plugin with RegExp supported.
+Power rollup content transform plugin.
 
 ## Installation
 
@@ -61,6 +61,18 @@ rollup({
       test: 'if (global.GENTLY) require = GENTLY.hijack(require);', 
       // string or function
       replace: '',
+    },
+    // replace whole file content
+    {
+      text: 'exports = "content"', // replace content with given text
+    },
+    {
+      file: './replace.js', // replace with given relative file
+    },
+    {
+      transform (code, id) { // replace by function
+        return `'use strict';\n${code}`
+      }
     }
   ]
 }
