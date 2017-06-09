@@ -3,10 +3,6 @@ import MagicString from 'magic-string'
 import {resolve} from 'path'
 import fs from 'fs'
 
-function isRegExp (re) {
-  return Object.prototype.toString.call(re) === '[object RegExp]'
-}
-
 export default function replace (options = {}) {
   const filter = createFilter(options.include, options.exclude)
   let contents = []
@@ -24,23 +20,23 @@ export default function replace (options = {}) {
         it.matcher = it.match
       } else if (isRegExp(it.match)) {
         it.matcher = it.match.test.bind(it.match)
-      } else if (typeof it.match === 'string') {
+      } else if (isString(it.match)) {
         it.matcher = createFilter(it.match)
       }
       // test
       if (isRegExp(it.test)) {
         it.testIsRegexp = true
-      } else if (typeof it.test === 'string') {
+      } else if (isString(it.test)) {
         it.testIsString = true
       }
       // replace
-      if (typeof it.replace === 'string') {
+      if (isString(it.replace)) {
         it.replaceIsString = true
       } else if (typeof it.replace === 'function') {
         it.replaceIsFunction = true
       }
       // content by file
-      if (typeof it.file === 'string') {
+      if (isString(it.file)) {
         it.replaceContent = (res) => {
           let file = resolve(res.id, '../', it.file)
           try {
@@ -51,7 +47,7 @@ export default function replace (options = {}) {
         }
       }
       // text
-      if (typeof it.text === 'string') {
+      if (isString(it.text)) {
         it.replaceContent = (res) => {
           res.content = it.text
         }
@@ -86,7 +82,7 @@ export default function replace (options = {}) {
             magicString
           }
           pattern.replaceContent(res)
-          if (res.content && res.content !== code) {
+          if (isString(res.content) && res.content !== code) {
             hasReplacements = true
             magicString = new MagicString(res.content)
             code = res.content
@@ -95,7 +91,7 @@ export default function replace (options = {}) {
         // transform
         if (pattern.transform) {
           let newCode = pattern.transform(code, id)
-          if (newCode !== code) {
+          if (isString(newCode) && newCode !== code) {
             hasReplacements = true
             magicString = new MagicString(newCode)
             code = newCode
@@ -113,7 +109,7 @@ export default function replace (options = {}) {
               magicString.overwrite(start, end, pattern.replace)
             } else if (pattern.replaceIsFunction) {
               let str = pattern.replace.apply(null, match)
-              if (typeof str !== 'string') {
+              if (!isString(str)) {
                 throw new Error('[rollup-plugin-re] replace function should return a string')
               }
               magicString.overwrite(start, end, str)
@@ -132,7 +128,7 @@ export default function replace (options = {}) {
               magicString.overwrite(start, end, pattern.replace)
             } else if (pattern.replaceIsFunction) {
               let str = pattern.replace()
-              if (typeof str !== 'string') {
+              if (!isString(str)) {
                 throw new Error('[rollup-plugin-re] replace function should return a string')
               }
               magicString.overwrite(start, end, str)
@@ -152,4 +148,12 @@ export default function replace (options = {}) {
       return result
     }
   }
+}
+
+function isRegExp (re) {
+  return Object.prototype.toString.call(re) === '[object RegExp]'
+}
+
+function isString (str) {
+  return typeof str === 'string'
 }
