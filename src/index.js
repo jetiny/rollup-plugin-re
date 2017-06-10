@@ -33,12 +33,10 @@ function parseDefines (defines, patterns) {
 function parseReplaces (replaces, patterns) {
   if (isObject(replaces)) {
     for (let replaceName in replaces) {
-      if (replaces[replaceName]) {
-        patterns.push({
-          test: replaceName,
-          replace: replaces[replaceName]
-        })
-      }
+      patterns.push({
+        test: replaceName,
+        replace: replaces[replaceName]
+      })
     }
   }
 }
