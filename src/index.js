@@ -184,10 +184,10 @@ export default function replace (options = {}) {
                 }
                 const n = +m.slice(1)
                 if (n >= 1 && n < match.length) {
-                  return match[n] || '';
+                  return match[n] || ''
                 }
                 return m
-              });
+              })
             } else {
               str = pattern.replace.apply(null, match)
             }
