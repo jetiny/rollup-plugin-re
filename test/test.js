@@ -22,6 +22,10 @@ test('replaces strings', assert => rollup({
           replace: function (_, words) {
             return words.toLowerCase()
           }
+        },
+        {
+          test: /swap\((\w+), (\w+)\)/g,
+          replace: '$2, $1'
         }
       ]
     })
@@ -31,6 +35,7 @@ test('replaces strings', assert => rollup({
   assert.true(code.indexOf("'production' === 'production'") !== -1)
   assert.true(code.indexOf(', )') === -1)
   assert.true(!!~~code.indexOf('helloworld'))
+  assert.true(code.indexOf('console.log(b, a)') !== -1)
 }))
 
 test('replaces with text', assert => rollup({

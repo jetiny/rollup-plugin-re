@@ -166,15 +166,35 @@ export default function replace (options = {}) {
             hasReplacements = true
             start = match.index
             end = start + match[0].length
+            let str
             if (pattern.replaceIsString) {
-              magicString.overwrite(start, end, pattern.replace)
-            } else if (pattern.replaceIsFunction) {
-              let str = pattern.replace.apply(null, match)
-              if (!isString(str)) {
-                throw new Error('[rollup-plugin-re] replace function should return a string')
-              }
-              magicString.overwrite(start, end, str)
+              // fill capture groups
+              str = pattern.replace.replace(/\$\$|\$&|\$`|\$'|\$\d+/g, m => {
+                if (m === '$$') {
+                  return '$'
+                }
+                if (m === '$&') {
+                  return match[0]
+                }
+                if (m === '$`') {
+                  return code.slice(0, start)
+                }
+                if (m === "$'") {
+                  return code.slice(end)
+                }
+                const n = +m.slice(1)
+                if (n >= 1 && n < match.length) {
+                  return match[n] || '';
+                }
+                return m
+              });
+            } else {
+              str = pattern.replace.apply(null, match)
             }
+            if (!isString(str)) {
+              throw new Error('[rollup-plugin-re] replace function should return a string')
+            }
+            magicString.overwrite(start, end, str)
             match = pattern.test.exec(code)
           }
         } else if (pattern.testIsString) {
