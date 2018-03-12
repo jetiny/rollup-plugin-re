@@ -127,3 +127,20 @@ test('replaces with file', assert => rollup({
   assert.true(code.indexOf('fileContent') !== -1)
   assert.true(code.indexOf('debugger;') !== -1)
 }))
+
+test('verbose', assert => {
+  let ids = []
+  return rollup({
+    entry: 'fixtures/simple.js',
+    plugins: [
+      replace({
+        verbose (it) {
+          ids.push(it)
+        }
+      })
+    ]
+  }).then((bundle) => {
+    assert.true(ids.length === 1)
+  })
+})
+

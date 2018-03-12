@@ -109,6 +109,16 @@ function parsePatterns (patterns, contents) {
   })
 }
 
+function verbose (opts, result, id) {
+  if (opts.verbose) {
+    if (isFunction(opts.verbose)) {
+      opts.verbose(result, id)
+    } else {
+      console.log(`[${result}]`, id)
+    }
+  }
+}
+
 export default function replace (options = {}) {
   const filter = createFilter(options.include, options.exclude)
   let contents = []
@@ -116,14 +126,15 @@ export default function replace (options = {}) {
   parseDefines(options.defines, patterns)
   parseReplaces(options.replaces, patterns)
   parsePatterns(patterns, contents)
-
   return {
     name: 're',
     transform (code, id) {
       if (!filter(id)) {
+        verbose(options, 'exclude', id)
         return
       }
       if (!contents.length) {
+        verbose(options, 'ignore', id)
         return
       }
       let hasReplacements = false
@@ -208,7 +219,7 @@ export default function replace (options = {}) {
             if (pattern.replaceIsString) {
               magicString.overwrite(start, end, pattern.replace)
             } else if (pattern.replaceIsFunction) {
-              let str = pattern.replace()
+              let str = pattern.replace(id)
               if (!isString(str)) {
                 throw new Error('[rollup-plugin-re] replace function should return a string')
               }
@@ -222,6 +233,7 @@ export default function replace (options = {}) {
       if (!hasReplacements) {
         return
       }
+      verbose(options, 'replace', id)
       let result = { code: magicString.toString() }
       if (options.sourceMap !== false) {
         result.map = magicString.generateMap({ hires: true })
