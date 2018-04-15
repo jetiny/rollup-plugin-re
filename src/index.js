@@ -206,7 +206,7 @@ export default function replace (options = {}) {
               throw new Error('[rollup-plugin-re] replace function should return a string')
             }
             magicString.overwrite(start, end, str)
-            match = pattern.test.exec(code)
+            match = pattern.test.global ? pattern.test.exec(code) : null
           }
         } else if (pattern.testIsString) {
           let start, end
