@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-re",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "rollup replace plugin",
   "main": "dist/rollup-plugin-re.cjs.js",
   "jsnext": "dist/rollup-plugin-re.es.js",
