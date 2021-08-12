@@ -4,6 +4,7 @@
   "description": "rollup replace plugin",
   "main": "dist/rollup-plugin-re.cjs.js",
   "jsnext": "dist/rollup-plugin-re.es.js",
+  "types": "types.d.ts",
   "scripts": {
     "build": "rollup -c -f cjs -o dist/rollup-plugin-re.cjs.js && rollup -c -o dist/rollup-plugin-re.es.js",
     "dev": "rollup -cw -f cjs -o dist/rollup-plugin-re.cjs.js",
