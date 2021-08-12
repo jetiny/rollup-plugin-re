@@ -30,6 +30,14 @@ declare module 'rollup-plugin-re' {
 
   interface Options {
     /**
+     * Plugin active hook selection
+     *
+     * Defaults to 'transform' allowing in-chunk replacements as an input plugin
+     * Supports generateBundle in order to support output plugin contexts
+     */
+    hook: 'transform' | 'generateBundle';
+
+    /**
      * Files to include
      */
     include?: string | string[];

@@ -123,123 +123,146 @@ export default function replace (options = {}) {
   const filter = createFilter(options.include, options.exclude)
   let contents = []
   let patterns = options.patterns || (options.patterns = [])
+  let hook = options.hook || (options.hook = 'transform');
   parseDefines(options.defines, patterns)
   parseReplaces(options.replaces, patterns)
   parsePatterns(patterns, contents)
-  return {
-    name: 're',
-    transform (code, id) {
-      if (!filter(id)) {
-        verbose(options, 'exclude', id)
+
+  function transform (code, id) {
+    if (!filter(id)) {
+      verbose(options, 'exclude', id)
+      return
+    }
+    if (!contents.length) {
+      verbose(options, 'ignore', id)
+      return
+    }
+    let hasReplacements = false
+    let magicString = new MagicString(code)
+    contents.forEach((pattern) => {
+      if (!pattern.filter(id)) {
         return
       }
-      if (!contents.length) {
-        verbose(options, 'ignore', id)
+      if (pattern.matcher && !pattern.matcher(id)) {
         return
       }
-      let hasReplacements = false
-      let magicString = new MagicString(code)
-      contents.forEach((pattern) => {
-        if (!pattern.filter(id)) {
-          return
+      // replace content
+      if (pattern.replaceContent) {
+        let res = {
+          id,
+          code,
+          magicString
         }
-        if (pattern.matcher && !pattern.matcher(id)) {
-          return
+        pattern.replaceContent(res)
+        if (isString(res.content) && res.content !== code) {
+          hasReplacements = true
+          magicString = new MagicString(res.content)
+          code = res.content
         }
-        // replace content
-        if (pattern.replaceContent) {
-          let res = {
-            id,
-            code,
-            magicString
+      }
+      // transform
+      if (isFunction(pattern.transform)) {
+        let newCode = pattern.transform(code, id)
+        if (isString(newCode) && newCode !== code) {
+          hasReplacements = true
+          magicString = new MagicString(newCode)
+          code = newCode
+        }
+      }
+      // test & replace
+      if (pattern.testIsRegexp) {
+        let match = pattern.test.exec(code)
+        let start, end
+        while (match) {
+          hasReplacements = true
+          start = match.index
+          end = start + match[0].length
+          let str
+          if (pattern.replaceIsString) {
+            // fill capture groups
+            str = pattern.replace.replace(/\$\$|\$&|\$`|\$'|\$\d+/g, m => {
+              if (m === '$$') {
+                return '$'
+              }
+              if (m === '$&') {
+                return match[0]
+              }
+              if (m === '$`') {
+                return code.slice(0, start)
+              }
+              if (m === "$'") {
+                return code.slice(end)
+              }
+              const n = +m.slice(1)
+              if (n >= 1 && n < match.length) {
+                return match[n] || ''
+              }
+              return m
+            })
+          } else {
+            str = pattern.replace.apply(null, match)
           }
-          pattern.replaceContent(res)
-          if (isString(res.content) && res.content !== code) {
-            hasReplacements = true
-            magicString = new MagicString(res.content)
-            code = res.content
+          if (!isString(str)) {
+            throw new Error('[rollup-plugin-re] replace function should return a string')
           }
+          magicString.overwrite(start, end, str)
+          match = pattern.test.global ? pattern.test.exec(code) : null
         }
-        // transform
-        if (isFunction(pattern.transform)) {
-          let newCode = pattern.transform(code, id)
-          if (isString(newCode) && newCode !== code) {
-            hasReplacements = true
-            magicString = new MagicString(newCode)
-            code = newCode
-          }
-        }
-        // test & replace
-        if (pattern.testIsRegexp) {
-          let match = pattern.test.exec(code)
-          let start, end
-          while (match) {
-            hasReplacements = true
-            start = match.index
-            end = start + match[0].length
-            let str
-            if (pattern.replaceIsString) {
-              // fill capture groups
-              str = pattern.replace.replace(/\$\$|\$&|\$`|\$'|\$\d+/g, m => {
-                if (m === '$$') {
-                  return '$'
-                }
-                if (m === '$&') {
-                  return match[0]
-                }
-                if (m === '$`') {
-                  return code.slice(0, start)
-                }
-                if (m === "$'") {
-                  return code.slice(end)
-                }
-                const n = +m.slice(1)
-                if (n >= 1 && n < match.length) {
-                  return match[n] || ''
-                }
-                return m
-              })
-            } else {
-              str = pattern.replace.apply(null, match)
-            }
+      } else if (pattern.testIsString) {
+        let start, end
+        let len = pattern.test.length
+        let pos = code.indexOf(pattern.test)
+        while (pos !== -1) {
+          hasReplacements = true
+          start = pos
+          end = start + len
+          if (pattern.replaceIsString) {
+            magicString.overwrite(start, end, pattern.replace)
+          } else if (pattern.replaceIsFunction) {
+            let str = pattern.replace(id)
             if (!isString(str)) {
               throw new Error('[rollup-plugin-re] replace function should return a string')
             }
             magicString.overwrite(start, end, str)
-            match = pattern.test.global ? pattern.test.exec(code) : null
           }
-        } else if (pattern.testIsString) {
-          let start, end
-          let len = pattern.test.length
-          let pos = code.indexOf(pattern.test)
-          while (pos !== -1) {
-            hasReplacements = true
-            start = pos
-            end = start + len
-            if (pattern.replaceIsString) {
-              magicString.overwrite(start, end, pattern.replace)
-            } else if (pattern.replaceIsFunction) {
-              let str = pattern.replace(id)
-              if (!isString(str)) {
-                throw new Error('[rollup-plugin-re] replace function should return a string')
-              }
-              magicString.overwrite(start, end, str)
-            }
-            pos = code.indexOf(pattern.test, pos + 1)
-          }
+          pos = code.indexOf(pattern.test, pos + 1)
         }
-      })
-
-      if (!hasReplacements) {
-        return
       }
-      verbose(options, 'replace', id)
-      let result = { code: magicString.toString() }
-      if (options.sourceMap !== false) {
-        result.map = magicString.generateMap({ hires: true })
-      }
-      return result
+    })
+  
+    if (!hasReplacements) {
+      return
     }
+    verbose(options, 'replace', id)
+    let result = { code: magicString.toString() }
+    if (options.sourceMap !== false) {
+      result.map = magicString.generateMap({ hires: true })
+    }
+    return result
+  }
+
+  return {
+    name: 're',
+    ...options.hook === 'generateBundle' ? {
+      generateBundle(_, bundle) {
+        Object.keys(bundle).forEach((k) => {
+          if ('code' in bundle[k]) {
+            const chunk = bundle[k];
+
+            const transformed = transform(chunk.code, chunk.facadeModuleId || chunk.fileName);
+
+            if (transformed) {
+              chunk.code = transformed.code;
+
+              if (transformed.map) {
+                // Update source map
+                chunk.map = transformed.map;
+              }
+            }
+          }
+        });
+      }
+    } : { transform }
   }
 }
 
